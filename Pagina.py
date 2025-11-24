@@ -132,7 +132,7 @@ st.markdown("""
         justify-content: center;
     }
     
-    .metric-card-tributado {
+    .metric-card-RELEASE {
         background: linear-gradient(135deg, #FFD166 0%, #FFB347 100%);
         border: 2px solid #FFC857;
         border-radius: 15px;
@@ -177,7 +177,7 @@ st.markdown("""
     .metric-card-industria:hover, 
     .metric-card-petromoc:hover, 
     .metric-card-congenere:hover,
-    .metric-card-tributado:hover,
+    .metric-card-RELEASE:hover,
     .metric-card-fh:hover,
     .metric-card-plano:hover {
         transform: translateY(-5px);
@@ -593,8 +593,11 @@ def carregar_vendas() -> pd.DataFrame:
     """Carrega dados de vendas com verificação robusta"""
     try:
         arquivos_vendas = [
-            'Vds_2015_2019_Comb_.xlsx',
-            'Vds_2020_2023_Comb_.xlsx', 
+            'Vds_2015_Comb_.xlsx',
+            'Vds_2016_Comb_.xlsx', 
+            'Vds_2017_Comb_.xlsx',
+            'Vds_2018_2019_Comb_.xlsx',
+            'Vds_2020_2023_Comb_.xlsx',
             'Vds_2024_Comb_.xlsx',
             'Vds_2025_Comb_.xlsx'
         ]
@@ -640,12 +643,14 @@ def carregar_vendas() -> pd.DataFrame:
 @st.cache_data(ttl=3600)
 def carregar_plano() -> pd.DataFrame:
     try:
-        p1 = pd.read_excel('PlanComb_2015_2021.xlsx')
-        p2 = pd.read_excel('PlanComb_2022.xlsx')
-        p3 = pd.read_excel('PlanComb_2023.xlsx')
-        p4 = pd.read_excel('PlanComb_2024.xlsx')
-        p5 = pd.read_excel('PlanComb_2025.xlsx')
-        df = pd.concat([p1, p2, p3, p4, p5], ignore_index=True).fillna(0)
+        p1 = pd.read_excel('PlanComb_2015_2018.xlsx')
+        p2 = pd.read_excel('PlanComb_2019_2021.xlsx')
+        p3 = pd.read_excel('PlanComb_2022.xlsx')
+        p4 = pd.read_excel('PlanComb_2023.xlsx')
+        p5 = pd.read_excel('PlanComb_2024.xlsx')
+        p6 = pd.read_excel('PlanComb_2025.xlsx')
+
+        df = pd.concat([p1, p2, p3, p4, p5,p6], ignore_index=True).fillna(0)
         df['Data_Facturacao'] = pd.to_datetime(df['Data_Facturacao'], format='%d/%m/%Y', errors='coerce')
         
         return df
@@ -940,8 +945,8 @@ def renderizar_menu_lateral_corrigido():
     
     # SELEÇÃO DO MODO DE TRABALHO
     modo_trabalho = st.sidebar.radio(
-        "🎯 Selecione o Sector",
-        ["Importação", "Vendas", "Promotores", "Stock","Caixa_e_Bancos","KPIs"],
+        "🎯 SELECIONE",
+        ["Importação", "Vendas", "Promotores", "Stock","Caixa_e_Bancos","KPIs", "Simulacoes"],
         index=0,
         help="Selecione qual análise deseja visualizar",
         key="modo_trabalho_selector"
@@ -1085,8 +1090,8 @@ def criar_card_metricas(titulo: str, valor_principal: str, subtitulo1: str = "",
         card_class = "metric-card-petromoc"
     elif tipo_card == "congenere":
         card_class = "metric-card-congenere"
-    elif tipo_card == "tributado":
-        card_class = "metric-card-tributado"
+    elif tipo_card == "RELEASE":
+        card_class = "metric-card-RELEASE"
     elif tipo_card == "fh":
         card_class = "metric-card-fh"
     elif tipo_card == "plano":
@@ -1388,7 +1393,7 @@ def criar_aba_vendas_com_tabela_primeiro(df_filtrado: pd.DataFrame, filtros: Dic
         )
     
     with col3:
-        cor_diferenca = "fh" if variacao_total >= 0 else "tributado"
+        cor_diferenca = "fh" if variacao_total >= 0 else "RELEASE"
         criar_card_metricas(
             "Variação Total",
             f"{variacao_total:+.1f}%",
@@ -1685,9 +1690,9 @@ def criar_scroller_quota_mercado(total_industria_tm: float, total_petromoc_tm: f
         formatar_ptbr(total_congeneres_m3, 0)
     ), unsafe_allow_html=True)
 
-def criar_scroller_quota_petromoc(total_petromoc_tm: float, total_tributado_tm: float, total_fh_tm: float,
-                                total_petromoc_m3: float, total_tributado_m3: float, total_fh_m3: float,
-                                perc_tributado: float, perc_fh: float):
+def criar_scroller_quota_petromoc(total_petromoc_tm: float, total_RELEASE_tm: float, total_fh_tm: float,
+                                total_petromoc_m3: float, total_RELEASE_m3: float, total_fh_m3: float,
+                                perc_RELEASE: float, perc_fh: float):
     """Cria um scroller animado para a quota da Petromoc"""
     
     st.markdown("""
@@ -1702,7 +1707,7 @@ def criar_scroller_quota_petromoc(total_petromoc_tm: float, total_tributado_tm: 
             </div>
             <div class="scroller-item">
                 <div class="scroller-value" style="color: #FFD166;">{:.1f}%</div>
-                <div class="scroller-label">TRIBUTADO</div>
+                <div class="scroller-label">RELEASE</div>
                 <div class="scroller-subvalue">{} TM</div>
                 <div class="scroller-subvalue">{} m³</div>
             </div>
@@ -1717,9 +1722,9 @@ def criar_scroller_quota_petromoc(total_petromoc_tm: float, total_tributado_tm: 
     """.format(
         formatar_ptbr(total_petromoc_tm, 0),
         formatar_ptbr(total_petromoc_m3, 0),
-        perc_tributado,
-        formatar_ptbr(total_tributado_tm, 0),
-        formatar_ptbr(total_tributado_m3, 0),
+        perc_RELEASE,
+        formatar_ptbr(total_RELEASE_tm, 0),
+        formatar_ptbr(total_RELEASE_m3, 0),
         perc_fh,
         formatar_ptbr(total_fh_tm, 0),
         formatar_ptbr(total_fh_m3, 0)
@@ -1817,9 +1822,9 @@ def extrair_dados_garantias_bancarias(df_importacao: pd.DataFrame) -> pd.DataFra
     
     return dados_garantias
 
-def extrair_dados_portos_tributado_fh(df_importacao: pd.DataFrame) -> pd.DataFrame:
+def extrair_dados_portos_RELEASE_fh(df_importacao: pd.DataFrame) -> pd.DataFrame:
     """
-    Extrai dados de Portos vs Tributado/Financial Hold diretamente do dataframe ImportacaoMZ
+    Extrai dados de Portos vs RELEASE/Financial Hold diretamente do dataframe ImportacaoMZ
     Ordem fixa: Maputo, Beira, Nacala, Pemba
     Inclui coluna de percentagem de Financial Hold
     """
@@ -1840,24 +1845,24 @@ def extrair_dados_portos_tributado_fh(df_importacao: pd.DataFrame) -> pd.DataFra
     # ORDEM FIXA DOS PORTOS
     ORDEM_PORTOS = ['Maputo', 'Beira', 'Nacala', 'Pemba']
     
-    # Determinar colunas para tributado e financial hold
-    colunas_tributado = [col for col in df_importacao.columns if any(termo in col.upper() for termo in ['TRIBUTADO', 'PETRO_TM', 'QTD_PETRO'])]
+    # Determinar colunas para RELEASE e financial hold
+    colunas_RELEASE = [col for col in df_importacao.columns if any(termo in col.upper() for termo in ['RELEASE', 'PETRO_TM', 'QTD_PETRO'])]
     colunas_fh = [col for col in df_importacao.columns if any(termo in col.upper() for termo in ['FINANCIAL', 'FH', 'QTD_FH'])]
     
-    coluna_tributado = colunas_tributado[0] if colunas_tributado else None
+    coluna_RELEASE = colunas_RELEASE[0] if colunas_RELEASE else None
     coluna_fh = colunas_fh[0] if colunas_fh else None
     
     # Agrupar por porto
-    if coluna_tributado and coluna_fh:
+    if coluna_RELEASE and coluna_fh:
         # Se temos ambas as colunas
         dados_portos = df_importacao.groupby(coluna_porto).agg({
-            coluna_tributado: 'sum',
+            coluna_RELEASE: 'sum',
             coluna_fh: 'sum'
         }).reset_index()
         
         dados_portos = dados_portos.rename(columns={
             coluna_porto: 'Porto',
-            coluna_tributado: 'TRIBUTADO',
+            coluna_RELEASE: 'RELEASE',
             coluna_fh: 'FINANCIAL HOLD'
         })
         
@@ -1870,13 +1875,13 @@ def extrair_dados_portos_tributado_fh(df_importacao: pd.DataFrame) -> pd.DataFra
         
         dados_portos = dados_portos.rename(columns={
             coluna_porto: 'Porto',
-            'Qtd_Petro_TM': 'TRIBUTADO',
+            'Qtd_Petro_TM': 'RELEASE',
             'Qtd_FH_( TM)': 'FINANCIAL HOLD'
         })
         
     else:
         # Tentar encontrar dados alternativos
-        st.warning("⚠️ Estrutura de Tributado/Financial Hold não encontrada. Usando dados disponíveis.")
+        st.warning("⚠️ Estrutura de RELEASE/Financial Hold não encontrada. Usando dados disponíveis.")
         
         # Lista de portos únicos
         portos_unicos = df_importacao[coluna_porto].unique()
@@ -1887,18 +1892,18 @@ def extrair_dados_portos_tributado_fh(df_importacao: pd.DataFrame) -> pd.DataFra
                 dados_porto = df_importacao[df_importacao[coluna_porto] == porto]
                 
                 # Tentar calcular totais baseados em colunas disponíveis
-                tributado = 0
+                RELEASE = 0
                 fh = 0
                 
                 # Procurar por qualquer coluna numérica para simular dados
                 colunas_numericas = df_importacao.select_dtypes(include=[np.number]).columns
                 if len(colunas_numericas) > 0:
-                    tributado = dados_porto[colunas_numericas[0]].sum() if len(colunas_numericas) > 0 else 0
-                    fh = dados_porto[colunas_numericas[1]].sum() if len(colunas_numericas) > 1 else tributado * 0.3
+                    RELEASE = dados_porto[colunas_numericas[0]].sum() if len(colunas_numericas) > 0 else 0
+                    fh = dados_porto[colunas_numericas[1]].sum() if len(colunas_numericas) > 1 else RELEASE * 0.3
                 
                 dados_portos.append({
                     'Porto': porto,
-                    'TRIBUTADO': tributado,
+                    'RELEASE': RELEASE,
                     'FINANCIAL HOLD': fh
                 })
         
@@ -1917,7 +1922,7 @@ def extrair_dados_portos_tributado_fh(df_importacao: pd.DataFrame) -> pd.DataFra
                 dados_portos,
                 pd.DataFrame([{
                     'Porto': porto,
-                    'TRIBUTADO': 0.0,
+                    'RELEASE': 0.0,
                     'FINANCIAL HOLD': 0.0
                 }])
             ], ignore_index=True)
@@ -1939,23 +1944,23 @@ def extrair_dados_portos_tributado_fh(df_importacao: pd.DataFrame) -> pd.DataFra
     # CORREÇÃO: CALCULAR PERCENTAGEM DE FINANCIAL HOLD
     if not dados_portos.empty:
         dados_portos['% FINANCIAL HOLD'] = (dados_portos['FINANCIAL HOLD'] / 
-                                           (dados_portos['TRIBUTADO'] + dados_portos['FINANCIAL HOLD']) * 100).round(1)
+                                           (dados_portos['RELEASE'] + dados_portos['FINANCIAL HOLD']) * 100).round(1)
         
         # Tratar casos de divisão por zero
         dados_portos['% FINANCIAL HOLD'] = dados_portos['% FINANCIAL HOLD'].fillna(0.0)
     
     # CORREÇÃO: Adicionar linha geral com totais
     if not dados_portos.empty:
-        total_tributado = dados_portos['TRIBUTADO'].sum()
+        total_RELEASE = dados_portos['RELEASE'].sum()
         total_fh = dados_portos['FINANCIAL HOLD'].sum()
-        total_geral = total_tributado + total_fh
+        total_geral = total_RELEASE + total_fh
         percentual_fh_geral = (total_fh / total_geral * 100) if total_geral > 0 else 0
         
         dados_portos = pd.concat([
             dados_portos,
             pd.DataFrame([{
                 'Porto': 'Geral',
-                'TRIBUTADO': total_tributado,
+                'RELEASE': total_RELEASE,
                 'FINANCIAL HOLD': total_fh,
                 '% FINANCIAL HOLD': round(percentual_fh_geral, 1)
             }])
@@ -2043,7 +2048,7 @@ def criar_analise_market_share_com_scroller(df_filtrado: pd.DataFrame):
 
     total_industria_tm = total_petromoc_tm + total_congeneres_tm
     
-    total_tributado_tm = df_processed["Qtd_Petro_TM"].sum() if "Qtd_Petro_TM" in df_processed.columns else 0
+    total_RELEASE_tm = df_processed["Qtd_Petro_TM"].sum() if "Qtd_Petro_TM" in df_processed.columns else 0
     total_fh_tm = df_processed["Qtd_FH_( TM)"].sum() if "Qtd_FH_( TM)" in df_processed.columns else 0
 
     if total_industria_tm == 0:
@@ -2061,7 +2066,7 @@ def criar_analise_market_share_com_scroller(df_filtrado: pd.DataFrame):
 
     # Converter todos os valores para m³
     total_petromoc_m3 = converter_tm_para_m3_seguro(total_petromoc_tm, combustivel_principal)
-    total_tributado_m3 = converter_tm_para_m3_seguro(total_tributado_tm, combustivel_principal)
+    total_RELEASE_m3 = converter_tm_para_m3_seguro(total_RELEASE_tm, combustivel_principal)
     total_fh_m3 = converter_tm_para_m3_seguro(total_fh_tm, combustivel_principal)
     total_industria_m3 = converter_tm_para_m3_seguro(total_industria_tm, combustivel_principal)
     total_congeneres_m3 = converter_tm_para_m3_seguro(total_congeneres_tm, combustivel_principal)
@@ -2071,7 +2076,7 @@ def criar_analise_market_share_com_scroller(df_filtrado: pd.DataFrame):
     
     perc_petromoc = calcular_percentual(total_petromoc_tm, total_industria_tm)
     perc_congeneres = calcular_percentual(total_congeneres_tm, total_industria_tm)
-    perc_tributado = calcular_percentual(total_tributado_tm, total_petromoc_tm) if total_petromoc_tm > 0 else 0
+    perc_RELEASE = calcular_percentual(total_RELEASE_tm, total_petromoc_tm) if total_petromoc_tm > 0 else 0
     perc_fh = calcular_percentual(total_fh_tm, total_petromoc_tm) if total_petromoc_tm > 0 else 0
 
     # ========== SCROLLER QUOTA DE MERCADO ==========
@@ -2083,9 +2088,9 @@ def criar_analise_market_share_com_scroller(df_filtrado: pd.DataFrame):
     
     # ========== SCROLLER QUOTA PETROMOC ==========
     criar_scroller_quota_petromoc(
-        total_petromoc_tm, total_tributado_tm, total_fh_tm,
-        total_petromoc_m3, total_tributado_m3, total_fh_m3,
-        perc_tributado, perc_fh
+        total_petromoc_tm, total_RELEASE_tm, total_fh_tm,
+        total_petromoc_m3, total_RELEASE_m3, total_fh_m3,
+        perc_RELEASE, perc_fh
     )
 
     # ========== GRÁFICO DE PIZZA PARA COMPLEMENTAR ==========
@@ -2117,8 +2122,8 @@ def criar_analise_market_share_com_scroller(df_filtrado: pd.DataFrame):
     with col2:
         # Gráfico de pizza - Quota Petromoc
         dados_pizza_petromoc = pd.DataFrame({
-            'Tipo': ['Tributado', 'Financial Hold'],
-            'Percentual': [perc_tributado, perc_fh]
+            'Tipo': ['RELEASE', 'Financial Hold'],
+            'Percentual': [perc_RELEASE, perc_fh]
         })
         
         fig_petromoc = px.pie(
@@ -2128,7 +2133,7 @@ def criar_analise_market_share_com_scroller(df_filtrado: pd.DataFrame):
             title='Distribuição Interna - Petromoc',
             color='Tipo',
             color_discrete_map={
-                'Tributado': '#FFD166',
+                'RELEASE': '#FFD166',
                 'Financial Hold': '#06D6A0'
             }
         )
@@ -2158,7 +2163,7 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
     # Extrair dados para os cartões
     with st.spinner("🔄 Calculando métricas..."):
         dados_garantias = extrair_dados_garantias_bancarias(df_filtrado)
-        dados_portos = extrair_dados_portos_tributado_fh(df_filtrado)
+        dados_portos = extrair_dados_portos_RELEASE_fh(df_filtrado)
     
     # CARTÕES PRINCIPAIS
     col1, col2, col3, col4 = st.columns(4)
@@ -2187,39 +2192,39 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
             )
     
     with col2:
-        # Total Tributado
+        # Total RELEASE
         if not dados_portos.empty and 'Geral' in dados_portos['Porto'].values:
             total_geral = dados_portos[dados_portos['Porto'] == 'Geral'].iloc[0]
-            total_tributado = total_geral.get('TRIBUTADO', 0)
+            total_RELEASE = total_geral.get('RELEASE', 0)
             total_fh = total_geral.get('FINANCIAL HOLD', 0)
-            total_geral_volume = total_tributado + total_fh
-            perc_tributado = (total_tributado / total_geral_volume * 100) if total_geral_volume > 0 else 0
+            total_geral_volume = total_RELEASE + total_fh
+            perc_RELEASE = (total_RELEASE / total_geral_volume * 100) if total_geral_volume > 0 else 0
             
             criar_card_metricas(
-                "Volume Tributado",
-                f"{perc_tributado:.1f}%",
+                "Volume RELEASE",
+                f"{perc_RELEASE:.1f}%",
                 "Do total importado",
-                f"{formatar_ptbr(total_tributado, 0)} TM",
+                f"{formatar_ptbr(total_RELEASE, 0)} TM",
                 "💰",
-                "tributado"
+                "RELEASE"
             )
         else:
             criar_card_metricas(
-                "Volume Tributado",
+                "Volume RELEASE",
                 "0.0%",
                 "Do total importado",
                 "Dados não disponíveis",
                 "💰",
-                "tributado"
+                "RELEASE"
             )
     
     with col3:
         # Total Financial Hold
         if not dados_portos.empty and 'Geral' in dados_portos['Porto'].values:
             total_geral = dados_portos[dados_portos['Porto'] == 'Geral'].iloc[0]
-            total_tributado = total_geral.get('TRIBUTADO', 0)
+            total_RELEASE = total_geral.get('RELEASE', 0)
             total_fh = total_geral.get('FINANCIAL HOLD', 0)
-            total_geral_volume = total_tributado + total_fh
+            total_geral_volume = total_RELEASE + total_fh
             perc_fh = (total_fh / total_geral_volume * 100) if total_geral_volume > 0 else 0
             
             criar_card_metricas(
@@ -2244,7 +2249,7 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
         # Total Geral Importação
         if not dados_portos.empty and 'Geral' in dados_portos['Porto'].values:
             total_geral = dados_portos[dados_portos['Porto'] == 'Geral'].iloc[0]
-            total_volume = total_geral.get('TRIBUTADO', 0) + total_geral.get('FINANCIAL HOLD', 0)
+            total_volume = total_geral.get('RELEASE', 0) + total_geral.get('FINANCIAL HOLD', 0)
             
             criar_card_metricas(
                 "Total Importado",
@@ -2371,8 +2376,8 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
     
     st.markdown("---")
     
-    # ========== PORTOS vs TRIBUTADO/FINANCIAL HOLD ==========
-    st.markdown("#### ⚓ Portos - Tributado vs Financial Hold")
+    # ========== PORTOS vs RELEASE/FINANCIAL HOLD ==========
+    st.markdown("#### ⚓ Portos - RELEASE vs Financial Hold")
     
     if not dados_portos.empty:
         # CORREÇÃO: Remover duplicatas de Nacala
@@ -2387,7 +2392,7 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
         df_portos_display = dados_portos_clean.copy()
         
         # Formatar valores numéricos SEM casas decimais
-        colunas_volume = ['TRIBUTADO', 'FINANCIAL HOLD']
+        colunas_volume = ['RELEASE', 'FINANCIAL HOLD']
         for coluna in colunas_volume:
             if coluna in df_portos_display.columns:
                 df_portos_display[f'{coluna}_Formatado'] = df_portos_display[coluna].apply(
@@ -2411,7 +2416,7 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
         
         # Renomear colunas
         df_display_portos = df_portos_display[colunas_exibicao].copy()
-        df_display_portos.columns = ['Porto', 'Tributado (TM)', 'Financial Hold (TM)', '% Financial Hold']
+        df_display_portos.columns = ['Porto', 'RELEASE (TM)', 'Financial Hold (TM)', '% Financial Hold']
         
         # Exibir tabela
         st.dataframe(
@@ -2462,7 +2467,7 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
             # CORREÇÃO: Criar DataFrame correto para gráfico de barras agrupadas
             dados_melted = dados_grafico.melt(
                 id_vars=['Porto'], 
-                value_vars=['TRIBUTADO', 'FINANCIAL HOLD'],
+                value_vars=['RELEASE', 'FINANCIAL HOLD'],
                 var_name='Tipo', 
                 value_name='Volume'
             )
@@ -2472,10 +2477,10 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
                 x='Porto',
                 y='Volume',
                 color='Tipo',
-                title='Distribuição por Porto - Tributado vs Financial Hold',
+                title='Distribuição por Porto - RELEASE vs Financial Hold',
                 barmode='group',
                 color_discrete_map={
-                    'TRIBUTADO': '#FF6B35',
+                    'RELEASE': '#FF6B35',
                     'FINANCIAL HOLD': '#4ECDC4'
                 },
                 category_orders={"Porto": ORDEM_PORTOS_GRAFICO}
@@ -2490,7 +2495,7 @@ def criar_aba_importacao_com_dados_reais(df_filtrado: pd.DataFrame):
             st.markdown("##### 📥 Download Gráfico")
             # O gráfico não pode ser baixado diretamente, mas podemos oferecer os dados
             with st.expander("📊 Dados para o Gráfico"):
-                st.dataframe(dados_grafico[['Porto', 'TRIBUTADO', 'FINANCIAL HOLD']])
+                st.dataframe(dados_grafico[['Porto', 'RELEASE', 'FINANCIAL HOLD']])
     
     else:
         st.info("ℹ️ Nenhum dado de portos disponível")
@@ -2556,6 +2561,10 @@ def main():
     elif modo_trabalho == "KPIs":
         st.info("👥 Módulo KPIs em desenvolvimento...")
         st.write("Em breve: Análise dos KPIs")
+
+    elif modo_trabalho == "Simulacoes":
+        st.info("👥 Módulo Simulacoes em desenvolvimento...")
+        st.write("Em breve: Análise dss Simulacoes")    
 
     # RODAPÉ
     st.markdown("---")
