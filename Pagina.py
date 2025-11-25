@@ -19,11 +19,11 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from datetime import datetime, date
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
-from reportlab.lib.units import inch
+#from reportlab.lib.pagesizes import letter, A4
+#from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+#from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+#from reportlab.lib import colors
+#from reportlab.lib.units import inch
 
 # ============================================= CONFIGURAÇÃO DA PÁGINA =============================================
 st.set_page_config(
@@ -1179,63 +1179,13 @@ def criar_botao_download_excel(df: pd.DataFrame, nome_arquivo: str, descricao: s
         st.error(f"Erro ao gerar Excel: {e}")
 
 def criar_botao_download_pdf(df: pd.DataFrame, nome_arquivo: str, descricao: str, titulo: str):
-    """Cria botão para download em PDF"""
+    """Cria botão para download em PDF - TEMPORARIAMENTE DESABILITADO"""
     if df.empty:
         st.warning(f"Nenhum dado disponível para {descricao}")
         return
         
-    try:
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4)
-        elements = []
-        
-        # Estilos
-        styles = getSampleStyleSheet()
-        title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
-            fontSize=16,
-            spaceAfter=30,
-            textColor=colors.HexColor('#FF6B35')
-        )
-        
-        # Título
-        elements.append(Paragraph(titulo, title_style))
-        elements.append(Spacer(1, 12))
-        
-        # Tabela
-        if len(df) > 0:
-            # Limitar a 100 linhas para PDF
-            df_display = df.head(100)
-            data = [df_display.columns.tolist()] + df_display.values.tolist()
-            
-            table = Table(data)
-            table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#FF6B35')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 1), (-1, -1), 8),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
-            elements.append(table)
-        
-        doc.build(elements)
-        buffer.seek(0)
-        
-        st.download_button(
-            label=f"📄 PDF - {descricao}",
-            data=buffer,
-            file_name=f"{nome_arquivo}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
-            mime="application/pdf",
-            use_container_width=True
-        )
-    except Exception as e:
-        st.error(f"Erro ao gerar PDF: {e}")
+    st.info(f"📄 Funcionalidade PDF para {descricao} temporariamente desabilitada")
+    st.write("Em breve: Download em PDF disponível")
 
 def criar_botao_download_csv(df: pd.DataFrame, nome_arquivo: str, descricao: str):
     """Cria botão para download em CSV"""
